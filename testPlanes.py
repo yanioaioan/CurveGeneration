@@ -6,14 +6,66 @@ cmds.file( f=True, new=True )
 cmds.select(all=True)
 cmds.delete()
 
+
+
+def cross(a, b):
+    c = [a[1]*b[2] - a[2]*b[1],
+         a[2]*b[0] - a[0]*b[2],
+         a[0]*b[1] - a[1]*b[0]]
+
+    return c
+    
+p=0   
+def dot(a,b):
+    global p
+    p=0 
+    for i in range(len(a)):
+        p+=a[i]*b[i]
+    return p
+    
+
+    
+    
+def toEuler( x, y, z, angle):
+	s=math.sin(angle)
+	c=math.cos(angle)
+	t=1-c
+	#if axis is not already normalised then uncomment this
+	#magnitude = math.sqrt(x*x + y*y + z*z);
+	#if (magnitude==0):
+	#    print 'magnitude of axis of rotation 0'
+	#    exit()
+	# x /= magnitude;
+	# y /= magnitude;
+	# z /= magnitude;
+	if x*y*t + z*s > 0.998:# north pole singularity detected
+	    heading = 2*math.atan2(x*math.sin(angle/2),math.cos(angle/2))
+	    attitude = math.pi/2
+	    bank = 0
+	    return bank,heading,attitude
+	
+	if ((x*y*t + z*s) < -0.998):#south pole singularity detected
+		heading = -2*math.atan2(x*math.sin(angle/2),math.cos(angle/2));
+		attitude = -math.pi/2;
+		bank = 0
+		return bank,heading,attitude
+	
+	heading = math.atan2(y * s- x * z * t , 1 - (y*y+ z*z ) * t);
+	attitude = math.asin(x * y * t + z * s) ;
+	bank = math.atan2(x * s - y * z * t , 1 - (x*x + z*z) * t);
+	
+	return bank,heading,attitude
+
+
+
 numberOfTotalWholeCurves=1
 curveNumber=1
 curveName='pPlane1'#curve1
-numberOfWholeCircleRotations=1
+numberOfWholeCircleRotations=4
 
 lengthCircleRadius=5
 angle=0.0
-springCoefficient=400.0
+springCoefficient=200.0
 angleIncrementCircleSegments=20
 
 mycurve=''
@@ -25,8 +77,8 @@ planeList=[]
 
 while angle<numberOfWholeCircleRotations*360.0:
     
-    x=length*math.cos(angle*(math.pi/180.0))
-    y=length*math.sin(angle*(math.pi/180.0))
+    x=lengthCircleRadius*math.cos(angle*(math.pi/180.0))
+    y=lengthCircleRadius*math.sin(angle*(math.pi/180.0))
     
     springzIncrement=(angle/springCoefficient)
     
@@ -34,8 +86,8 @@ while angle<numberOfWholeCircleRotations*360.0:
     if not cmds.objExists(curveName ):
         #mycurve=cmds.curve(p=[(x,y,springzIncrement),(x,y,springzIncrement),(x,y,springzIncrement),(x,y,springzIncrement)])
         
-        mycurve=cmds.polyPlane(sx=1,sy=1)
-        cmds.move(x,y,0)
+        mycurve=cmds.polyPlane(sx=1,sy=1 )#', axis=[x,y,springzIncrement]
+        cmds.move(x,y,springzIncrement)
         cmds.rotate(0,0,90)
         planeList.append(mycurve[0])
         
@@ -44,8 +96,8 @@ while angle<numberOfWholeCircleRotations*360.0:
     else:
         #cmds.curve(mycurve, append=True, p=[(x,y,springzIncrement)])
         
-        mycurve=cmds.polyPlane(sx=1,sy=1)
-        cmds.move(x,y,0)
+        mycurve=cmds.polyPlane(sx=1,sy=1 )#, axis=[x,y,springzIncrement]
+        cmds.move(x,y,springzIncrement)
         cmds.rotate(0,0,90+angle)
         planeList.append(mycurve[0])
         
@@ -99,7 +151,7 @@ for i in planeList:
     faceCenter = [sumX/faceVertices, sumY/faceVertices, sumZ/faceVertices]
         
     #place cone
-    c=cmds.polyLine( n='myCone', sx=5, sy=5, sz=5)
+    c=cmds.polyCone( n='myCone', sx=5, sy=5, sz=5)
     cmds.move( faceCenter[0], faceCenter[1], faceCenter[2], c, absolute=True )
     cmds.scale(0.3,0.3,0.3, c, absolute=True)
     
