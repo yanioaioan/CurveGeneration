@@ -88,6 +88,7 @@ while angle<numberOfWholeCircleRotations*360.0:
         
         mycurve=cmds.polyPlane(sx=1,sy=1 )#', axis=[x,y,springzIncrement]
         cmds.move(x,y,springzIncrement)
+        cmds.scale(2,2,1)
         cmds.rotate(0,0,90)
         planeList.append(mycurve[0])
         
@@ -98,8 +99,11 @@ while angle<numberOfWholeCircleRotations*360.0:
         
         mycurve=cmds.polyPlane(sx=1,sy=1 )#, axis=[x,y,springzIncrement]
         cmds.move(x,y,springzIncrement)
-        cmds.rotate(0,0,90+angle)
+        cmds.scale(2,2,1)
+        cmds.rotate(0,-springzIncrement,90+angle)
         planeList.append(mycurve[0])
+        #now we can hide the planes
+        #cmds.hide()
         
         cmds.select(all=True)
         cmds.delete(ch=True)
